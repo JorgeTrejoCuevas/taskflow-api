@@ -26,6 +26,12 @@ public class Tarea {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Prácticas 13-14: control de concurrencia optimista.
+    // Cada cambio incrementa la versión; si alguien guarda con una versión vieja -> 409.
+    @Version
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private Long version = 0L;
+
     @NotBlank(message = "El título no puede estar vacío")
     @Size(min = 3, max = 150)
     @Column(nullable = false)

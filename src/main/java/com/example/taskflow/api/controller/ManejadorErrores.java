@@ -5,6 +5,7 @@
 
 package com.example.taskflow.api.controller;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,12 @@ public class ManejadorErrores {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> jsonInvalido(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest().body(Map.of("error", "El cuerpo no es un JSON válido"));
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> conflictoDeVersion(ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "La tarea fue modificada en otro dispositivo; recarga e intenta de nuevo"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

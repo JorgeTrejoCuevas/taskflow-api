@@ -5,6 +5,7 @@
 
 package com.example.taskflow.api.service;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import com.example.taskflow.api.model.Tarea;
 import com.example.taskflow.api.model.Usuario;
 import com.example.taskflow.api.repository.TareaRepository;
@@ -47,6 +48,10 @@ public class TareaService {
     // ── Actualizar tarea (solo si pertenece al usuario) ──────
     public Optional<Tarea> actualizar(Long id, Tarea datos, String correo) {
         return tareaRepository.findByIdAndUsuarioCorreo(id, correo).map(t -> {
+            // Prácticas 13-14: si el cliente editó una versión vieja, no se sobrescribe
+            if (datos.getVersion() != null && !datos.getVersion().equals(t.getVersion())) {
+                throw new ObjectOptimisticLockingFailureException(Tarea.class, id);
+            }
             t.setTitulo(datos.getTitulo());
             t.setDescripcion(datos.getDescripcion());
             t.setCategoria(datos.getCategoria());

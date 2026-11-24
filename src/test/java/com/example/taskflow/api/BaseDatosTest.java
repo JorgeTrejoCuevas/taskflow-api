@@ -8,6 +8,7 @@
 
 package com.example.taskflow.api;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import com.example.taskflow.api.model.Tarea;
 import com.example.taskflow.api.model.Usuario;
 import com.example.taskflow.api.repository.TareaRepository;
@@ -125,7 +126,7 @@ class BaseDatosTest {
     }
 
     @Test
-    @DisplayName("Defecto DB-06: dos ediciones concurrentes sobre la misma tarea -> se pierde una (sin @Version)")
+    @DisplayName("DB-06: dos ediciones concurrentes -> la segunda se rechaza (409) y no se pierde ningún cambio (@Version)")
     void actualizacionPerdida() {
         Tarea t = tareas.save(tarea(usuario(), "Original"));
 
@@ -137,12 +138,14 @@ class BaseDatosTest {
         reloj.setEstado("finalizado");
 
         tareas.save(web);
-        tareas.save(reloj); // sobrescribe el título con el valor viejo
+        // Antes de @Version esta línea sobrescribía el título en silencio (last-write-wins)
+        assertThrows(ObjectOptimisticLockingFailureException.class, () -> tareas.save(reloj),
+                "El segundo guardado trae una versión vieja y debe rechazarse");
 
         Tarea fin = tareas.findById(t.getId()).orElseThrow();
         System.out.println("[DB-06] título final = " + fin.getTitulo() + " | estado final = " + fin.getEstado());
-        assertEquals("Título editado en la web", fin.getTitulo(),
-                "Last-write-wins: el cambio de la web se perdió");
+        assertEquals("Título editado en la web", fin.getTitulo(), "El cambio de la web se conserva");
+        assertEquals(1L, fin.getVersion());
     }
 
     @Test

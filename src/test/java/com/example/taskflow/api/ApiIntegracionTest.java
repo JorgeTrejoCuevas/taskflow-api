@@ -186,6 +186,19 @@ class ApiIntegracionTest {
     }
 
     @Test
+    @DisplayName("WEB-02: editar con una versión vieja -> 409 Conflict y no se pierde el cambio anterior")
+    void conflictoDeVersion() throws Exception {
+        String token = registrar(correoNuevo());
+        String id = campo(http("POST", "/api/tareas", tareaJson("Original"), token).body(), "id");
+        String v0 = "{\"version\":0," + tareaJson("Editada en la web").substring(1);
+        String v0b = "{\"version\":0," + tareaJson("Editada en el reloj").substring(1);
+
+        assertEquals(200, http("PUT", "/api/tareas/" + id, v0, token).code());
+        assertEquals(409, http("PUT", "/api/tareas/" + id, v0b, token).code());
+        assertTrue(http("GET", "/api/tareas/" + id, null, token).body().contains("Editada en la web"));
+    }
+
+    @Test
     @DisplayName("WEB-02: actualizar tarea inexistente -> 404")
     void actualizarInexistente() throws Exception {
         String token = registrar(correoNuevo());
