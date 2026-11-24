@@ -6,6 +6,7 @@
 
 package com.example.taskflow.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -14,7 +15,11 @@ import java.time.LocalTime;
 
 @Data
 @Entity
-@Table(name = "tareas")
+@Table(name = "tareas", indexes = {
+        // Práctica 12: índice para las consultas por usuario (antes: Seq Scan)
+        @Index(name = "idx_tareas_usuario", columnList = "usuario_id"),
+        @Index(name = "idx_tareas_usuario_estado", columnList = "usuario_id, estado")
+})
 public class Tarea {
 
     @Id
@@ -49,7 +54,9 @@ public class Tarea {
 
     // Relación con el usuario dueño de la tarea
     // FetchType.LAZY = no carga el usuario a menos que se pida
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    // Práctica 12: @JsonIgnore evita enviar el usuario (y su hash) en cada tarea
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 }

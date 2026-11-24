@@ -5,6 +5,7 @@
 
 package com.example.taskflow.api.controller;
 
+import jakarta.validation.Valid;
 import com.example.taskflow.api.dto.AuthResponse;
 import com.example.taskflow.api.dto.LoginRequest;
 import com.example.taskflow.api.dto.RegisterRequest;
@@ -39,7 +40,7 @@ public class AuthController {
 
     // ── POST /api/auth/registro ──────────────────────────────
     @PostMapping("/registro")
-    public ResponseEntity<?> registro(@RequestBody RegisterRequest req) {
+    public ResponseEntity<?> registro(@Valid @RequestBody RegisterRequest req) {
 
         if (usuarioRepository.existsByCorreo(req.getCorreo())) {
             return ResponseEntity

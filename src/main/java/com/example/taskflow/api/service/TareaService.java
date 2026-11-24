@@ -59,6 +59,14 @@ public class TareaService {
         });
     }
 
+    // ── Cambiar solo el estado (Práctica 12) ────────────────
+    public Optional<Tarea> cambiarEstado(Long id, String estado, String correo) {
+        return tareaRepository.findByIdAndUsuarioCorreo(id, correo).map(t -> {
+            t.setEstado(estado);
+            return tareaRepository.save(t);
+        });
+    }
+
     // ── Eliminar tarea (solo si pertenece al usuario) ────────
     public boolean eliminar(Long id, String correo) {
         return tareaRepository.findByIdAndUsuarioCorreo(id, correo).map(t -> {

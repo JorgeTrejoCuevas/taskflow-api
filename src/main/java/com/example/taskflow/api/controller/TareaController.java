@@ -6,6 +6,7 @@
 
 package com.example.taskflow.api.controller;
 
+import java.util.Map;
 import com.example.taskflow.api.model.Tarea;
 import com.example.taskflow.api.service.TareaService;
 import jakarta.validation.Valid;
@@ -54,10 +55,27 @@ public class TareaController {
     // ── PUT /api/tareas/{id} ─────────────────────────────────
     @PutMapping("/{id}")
     public ResponseEntity<Tarea> actualizar(@PathVariable Long id,
-                                             @Valid @RequestBody Tarea tarea,
-                                             Authentication auth) {
+            @Valid @RequestBody Tarea tarea,
+            Authentication auth) {
         return service.actualizar(id, tarea, getCorreo(auth))
                 .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── PATCH /api/tareas/{id}/estado ───────────────────────
+    // Práctica 12: el reloj solo cambia el estado; ya no reenvía la tarea completa,
+    // así no sobrescribe cambios hechos en la web (actualización perdida).
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(@PathVariable Long id,
+                                           @RequestBody Map<String, String> cuerpo,
+                                           Authentication auth) {
+        String estado = cuerpo == null ? null : cuerpo.get("estado");
+        if (estado == null || !List.of("pendiente", "progreso", "finalizado").contains(estado)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "estado debe ser pendiente, progreso o finalizado"));
+        }
+        return service.cambiarEstado(id, estado, getCorreo(auth))
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -72,7 +90,7 @@ public class TareaController {
     // ── GET /api/tareas/estado/{estado} ─────────────────────
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<Tarea>> porEstado(@PathVariable String estado,
-                                                   Authentication auth) {
+            Authentication auth) {
         return ResponseEntity.ok(service.obtenerPorEstado(estado, getCorreo(auth)));
     }
 

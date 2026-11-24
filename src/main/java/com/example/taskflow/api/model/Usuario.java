@@ -7,6 +7,7 @@
 
 package com.example.taskflow.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -33,5 +34,6 @@ public class Usuario {
 
     // Guardado encriptado con BCrypt — nunca texto plano
     @NotBlank
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 }
