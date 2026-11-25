@@ -30,7 +30,7 @@ public class Tarea {
     // Cada cambio incrementa la versión; si alguien guarda con una versión vieja -> 409.
     @Version
     @Column(nullable = false, columnDefinition = "bigint default 0")
-    private Long version = 0L;
+    private Long version; // null = el cliente no envió versión (Hibernate asigna 0 al crear)
 
     @NotBlank(message = "El título no puede estar vacío")
     @Size(min = 3, max = 150)

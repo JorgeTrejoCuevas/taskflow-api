@@ -186,6 +186,16 @@ class ApiIntegracionTest {
     }
 
     @Test
+    @DisplayName("P8 CN-11: editar dos veces sin enviar versión (formulario web) -> 200 ambas veces")
+    void editarSinVersion() throws Exception {
+        String token = registrar(correoNuevo());
+        String id = campo(http("POST", "/api/tareas", tareaJson("Original"), token).body(), "id");
+        assertEquals(200, http("PUT", "/api/tareas/" + id, tareaJson("Primera edición"), token).code());
+        assertEquals(200, http("PUT", "/api/tareas/" + id, tareaJson("Segunda edición"), token).code());
+        assertTrue(http("GET", "/api/tareas/" + id, null, token).body().contains("Segunda edición"));
+    }
+
+    @Test
     @DisplayName("WEB-02: editar con una versión vieja -> 409 Conflict y no se pierde el cambio anterior")
     void conflictoDeVersion() throws Exception {
         String token = registrar(correoNuevo());
